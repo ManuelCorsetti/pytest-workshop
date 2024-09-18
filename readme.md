@@ -17,7 +17,7 @@
 
 - **Unit testing** verifies the functionality of small, isolated pieces of code (e.g., functions or classes) to ensure they perform as expected.
 
-### Benefits of Unit Testing:
+### Benefits of Unit Testing
 
 - **Early Bug Detection**: Catch bugs early in development.
 - **Facilitates Refactoring**: Ensure your code remains stable after changes.
@@ -86,8 +86,9 @@ my_project/
 ├── tests/
 │   ├── __init__.py
 │   ├── test_module1.py
-│   └── test_module2.py
-└── setup.py
+│   ├── test_module2.py
+│   └── conftest.py
+└── main.py
 ```
 
 - **src/**: Contains source code.
@@ -98,9 +99,21 @@ my_project/
 - Prevents accidental imports from the wrong directory.
 - Organizes source code and tests for scalability and maintainability.
 
-### Naming Conventions
+### Conventions for Python test discovery
+
+- Tests are searched **recursively** starting from the current active folder in your command line
+  - Test discovery is manually set up on VS Code - this is my preferred way of working
+- In the active directory, search for `test_*.py` (our chosen approach) or `*_test.py` files
+
+From those test files found, collect test items:
+
+- `test` prefixed test functions or methods outside of class
+- `test` prefixed test functions or methods inside `Test` prefixed test classes (without an `__init__` method)
+
+#### In Summary
 
 - Test files and functions should start with `test_` for automatic discovery by PyTest.
+- It is not required for test discovery for the tests to exist within the `tests` folder, but it is best practice and will help you manage your project
 
 ---
 
@@ -178,6 +191,30 @@ with patch('module.some_class') as mock_class:
     instance.method.return_value = 'mocked!'
     assert instance.method() == 'mocked!'
 ```
+
+### Using patch with new_callable
+
+When you use `new_callable`, you can define a custom class or factory to replace the original class. This is useful when you need to patch with a specific mock object or class rather than simply modifying return_value.
+
+```python
+from unittest.mock import patch, MagicMock
+
+class CustomMock(MagicMock):
+    def method(self):
+        return 'mocked with new_callable!'
+
+@patch('module.some_class', new_callable=CustomMock)
+def test_patch_with_new_callable(mock_class):
+    # Since new_callable is CustomMock, the method will return the value we defined
+    assert mock_class.method() == 'mocked with new_callable!'
+```
+
+**Key Differences:**
+
+- `return_value` is used to define the return of a method or object
+- `new_callable` allows replacing the entire target with a custom class or callable, offering more control over the behavior of the patched object.
+
+Both methods can be useful depending on the level of customization needed.
 
 ### Best Practices for Mocking and Patching
 
